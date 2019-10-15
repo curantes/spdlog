@@ -4,16 +4,18 @@
 #
 Name     : spdlog
 Version  : 1.4.2
-Release  : 1
+Release  : 2
 URL      : https://github.com/gabime/spdlog/archive/v1.4.2.tar.gz
 Source0  : https://github.com/gabime/spdlog/archive/v1.4.2.tar.gz
 Summary  : Fast C++ logging library.
 Group    : Development/Tools
 License  : MIT
+Requires: spdlog-lib = %{version}-%{release}
 BuildRequires : buildreq-cmake
 BuildRequires : buildreq-meson
 BuildRequires : glibc-dev
 BuildRequires : pkg-config
+BuildRequires : pkgconfig(fmt)
 BuildRequires : pkgconfig(libsystemd)
 
 %description
@@ -23,11 +25,20 @@ Very fast, header-only/compiled, C++ logging library. [![Build Status](https://t
 %package dev
 Summary: dev components for the spdlog package.
 Group: Development
+Requires: spdlog-lib = %{version}-%{release}
 Provides: spdlog-devel = %{version}-%{release}
 Requires: spdlog = %{version}-%{release}
 
 %description dev
 dev components for the spdlog package.
+
+
+%package lib
+Summary: lib components for the spdlog package.
+Group: Libraries
+
+%description lib
+lib components for the spdlog package.
 
 
 %prep
@@ -38,7 +49,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1571169575
+export SOURCE_DATE_EPOCH=1571170004
 mkdir -p clr-build
 pushd clr-build
 export GCC_IGNORE_WERROR=1
@@ -49,7 +60,11 @@ export CFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=4 "
 export FCFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=4 "
 export FFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=4 "
 export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=4 "
-%cmake ..
+%cmake .. -DSPDLOG_BUILD_BENCH=OFF \
+-DSPDLOG_BUILD_EXAMPLES=OFF \
+-DSPDLOG_FMT_EXTERNAL=ON \
+-DSPDLOG_BUILD_SHARED=ON \
+-DCMAKE_BUILD_TYPE=Release
 make  %{?_smp_mflags}  VERBOSE=1
 popd
 
@@ -61,7 +76,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 cd clr-build; make test
 
 %install
-export SOURCE_DATE_EPOCH=1571169575
+export SOURCE_DATE_EPOCH=1571170004
 rm -rf %{buildroot}
 pushd clr-build
 %make_install
@@ -70,7 +85,7 @@ popd
 %files
 %defattr(-,root,root,-)
 /usr/lib64/spdlog/cmake/spdlogConfig.cmake
-/usr/lib64/spdlog/cmake/spdlogConfigTargets-relwithdebinfo.cmake
+/usr/lib64/spdlog/cmake/spdlogConfigTargets-release.cmake
 /usr/lib64/spdlog/cmake/spdlogConfigTargets.cmake
 /usr/lib64/spdlog/cmake/spdlogConfigVersion.cmake
 
@@ -106,19 +121,6 @@ popd
 /usr/include/spdlog/details/thread_pool-inl.h
 /usr/include/spdlog/details/thread_pool.h
 /usr/include/spdlog/fmt/bin_to_hex.h
-/usr/include/spdlog/fmt/bundled/LICENSE.rst
-/usr/include/spdlog/fmt/bundled/chrono.h
-/usr/include/spdlog/fmt/bundled/color.h
-/usr/include/spdlog/fmt/bundled/compile.h
-/usr/include/spdlog/fmt/bundled/core.h
-/usr/include/spdlog/fmt/bundled/format-inl.h
-/usr/include/spdlog/fmt/bundled/format.h
-/usr/include/spdlog/fmt/bundled/locale.h
-/usr/include/spdlog/fmt/bundled/ostream.h
-/usr/include/spdlog/fmt/bundled/posix.h
-/usr/include/spdlog/fmt/bundled/printf.h
-/usr/include/spdlog/fmt/bundled/ranges.h
-/usr/include/spdlog/fmt/bundled/safe-duration-cast.h
 /usr/include/spdlog/fmt/fmt.h
 /usr/include/spdlog/fmt/ostr.h
 /usr/include/spdlog/formatter.h
@@ -153,4 +155,10 @@ popd
 /usr/include/spdlog/spdlog.h
 /usr/include/spdlog/tweakme.h
 /usr/include/spdlog/version.h
+/usr/lib64/libspdlog.so
 /usr/lib64/pkgconfig/spdlog.pc
+
+%files lib
+%defattr(-,root,root,-)
+/usr/lib64/libspdlog.so.1
+/usr/lib64/libspdlog.so.1.4.2
